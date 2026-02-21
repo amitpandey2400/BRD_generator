@@ -1,7 +1,9 @@
 """
+"""
 Document processing for uploaded files (PDF, DOCX, PPTX, TXT)
 """
 import os
+import time
 from typing import Dict, Optional
 from pathlib import Path
 import PyPDF2
@@ -149,7 +151,7 @@ class DocumentProcessor:
         storage_path.mkdir(parents=True, exist_ok=True)
         
         # Generate unique filename
-        timestamp = int(os.time())
+        timestamp = int(time.time())
         safe_filename = f"{timestamp}_{filename}"
         file_path = storage_path / safe_filename
         

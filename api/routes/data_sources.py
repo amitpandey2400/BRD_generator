@@ -85,14 +85,15 @@ async def upload_document(
     db: AsyncSession = Depends(get_db)
 ):
     """Upload a document for processing"""
-    # Check file size
-    contents = await file.read()
-    if len(contents) > settings.MAX_UPLOAD_SIZE:
-        raise HTTPException(status_code=413, detail="File too large")
-    
-    # Save file
-    doc_processor = DocumentProcessor()
+    import traceback
     try:
+        # Check file size
+        contents = await file.read()
+        if len(contents) > settings.MAX_UPLOAD_SIZE:
+            raise HTTPException(status_code=413, detail="File too large")
+        
+        # Save file
+        doc_processor = DocumentProcessor()
         file_path = doc_processor.save_uploaded_file(contents, file.filename)
         
         return {
@@ -101,8 +102,13 @@ async def upload_document(
             "size": len(contents),
             "message": "File uploaded successfully"
         }
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        error_trace = traceback.format_exc()
+        print(f"Error uploading document: {str(e)}")
+        print(f"Traceback: {error_trace}")
+        raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
 
 
 @router.delete("/{source_id}")
