@@ -106,7 +106,7 @@ Return ONLY a JSON array of requirements. Example format:
                     'acceptance_criteria': None
                 })
         
-        logger.info(f\"Created {len(requirements)} fallback requirements\")
+        logger.info(f"Created {len(requirements)} fallback requirements")
         return requirements
     
     async def extract_decisions(self, text: str) -> List[Dict]:
