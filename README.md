@@ -1,3 +1,13 @@
+---
+title: BRD Generator
+emoji: 📄
+colorFrom: purple
+colorTo: blue
+sdk: docker
+pinned: false
+license: mit
+---
+
 # Business Requirements Document (BRD) Generator
 
 An intelligent system that automatically generates comprehensive Business Requirements Documents by ingesting data from multiple communication channels.
