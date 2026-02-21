@@ -554,7 +554,7 @@
 
             try {
                 showAlert('Uploading and processing document...', 'info');
-                const response = await fetch('/api/data-sources/document', {
+                const response = await fetch('/api/data-sources/upload', {
                     method: 'POST',
                     body: formData
                 });
