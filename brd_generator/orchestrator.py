@@ -40,18 +40,23 @@ class BRDOrchestrator:
     
     async def create_project(self, name: str, description: str = "") -> Project:
         """Create a new project"""
-        project = Project(
-            name=name,
-            description=description,
-            status=ProjectStatus.CREATED
-        )
-        
-        self.db.add(project)
-        await self.db.commit()
-        await self.db.refresh(project)
-        
-        logger.info(f"Created project: {project.id} - {name}")
-        return project
+        try:
+            project = Project(
+                name=name,
+                description=description,
+                status=ProjectStatus.CREATED
+            )
+            
+            self.db.add(project)
+            await self.db.commit()
+            await self.db.refresh(project)
+            
+            logger.info(f"Created project: {project.id} - {name}")
+            return project
+        except Exception as e:
+            logger.error(f"Error creating project '{name}': {str(e)}", exc_info=True)
+            await self.db.rollback()
+            raise
     
     async def ingest_data(
         self,

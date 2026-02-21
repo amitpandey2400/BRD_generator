@@ -40,19 +40,29 @@ async def create_project(
     db: AsyncSession = Depends(get_db)
 ):
     """Create a new project"""
-    orchestrator = BRDOrchestrator(db)
-    project = await orchestrator.create_project(
-        name=project_data.name,
-        description=project_data.description
-    )
-    
-    return ProjectResponse(
-        id=project.id,
-        name=project.name,
-        description=project.description,
-        status=project.status.value,
-        created_at=project.created_at.isoformat()
-    )
+    try:
+        orchestrator = BRDOrchestrator(db)
+        project = await orchestrator.create_project(
+            name=project_data.name,
+            description=project_data.description
+        )
+        
+        return ProjectResponse(
+            id=project.id,
+            name=project.name,
+            description=project.description,
+            status=project.status.value,
+            created_at=project.created_at.isoformat()
+        )
+    except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"Error creating project: {str(e)}")
+        print(f"Traceback: {error_trace}")
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Failed to create project: {str(e)}"
+        )
 
 
 @router.get("", response_model=List[ProjectResponse])
