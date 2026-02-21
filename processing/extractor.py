@@ -69,15 +69,45 @@ Return ONLY a JSON array of requirements. Example format:
             # Try to parse JSON from response
             requirements = json.loads(content)
             
-            logger.info(f"Extracted {len(requirements)} requirements")
+            logger.info(f"Extracted {len(requirements)} requirements using AI")
             return requirements
             
         except json.JSONDecodeError as e:
             logger.error(f"Failed to parse requirements JSON: {e}")
-            return []
+            logger.error(f"AI Response: {content[:500]}")
+            # Fallback: Create basic requirement from text
+            return self._create_fallback_requirements(text)
         except Exception as e:
-            logger.error(f"Error extracting requirements: {e}")
-            return []
+            logger.error(f"Error extracting requirements with AI: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
+            # Fallback: Create basic requirement from text
+            return self._create_fallback_requirements(text)
+    
+    def _create_fallback_requirements(self, text: str) -> List[Dict]:
+        """Create basic requirements when AI extraction fails"""
+        logger.info("Creating fallback requirements from text")
+        
+        # Split text into chunks by paragraphs or sentences
+        paragraphs = [p.strip() for p in text.split('\n\n') if p.strip()]
+        
+        if not paragraphs:
+            paragraphs = [text[:500]]  # Use first 500 chars if no paragraphs
+        
+        requirements = []
+        for idx, para in enumerate(paragraphs[:10]):  # Limit to 10 requirements
+            if len(para) > 20:  # Skip very short paragraphs
+                requirements.append({
+                    'type': 'functional',
+                    'title': f'Requirement {idx + 1}',
+                    'description': para,
+                    'priority': 'Medium',
+                    'stakeholder': 'Project Team',
+                    'acceptance_criteria': None
+                })
+        
+        logger.info(f\"Created {len(requirements)} fallback requirements\")
+        return requirements
     
     async def extract_decisions(self, text: str) -> List[Dict]:
         """Extract key decisions made in the text"""

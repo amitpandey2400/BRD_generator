@@ -250,50 +250,78 @@ class BRDOrchestrator:
     
     async def process_and_extract(self, project_id: str) -> Dict:
         """Process ingested data and extract requirements"""
-        # Get all data sources
-        result = await self.db.execute(
-            select(DataSource).where(DataSource.project_id == project_id)
-        )
-        data_sources = result.scalars().all()
+        import traceback
         
-        all_requirements = []
-        
-        for ds in data_sources:
-            # Extract requirements
-            requirements = await self.extractor.extract_requirements(ds.raw_content)
+        try:
+            # Get all data sources
+            result = await self.db.execute(
+                select(DataSource).where(DataSource.project_id == project_id)
+            )
+            data_sources = result.scalars().all()
             
-            for req in requirements:
-                requirement = Requirement(
-                    project_id=project_id,
-                    requirement_type=RequirementType(req['type']),
-                    title=req['title'],
-                    description=req['description'],
-                    priority=req.get('priority', 'Medium'),
-                    stakeholder=req.get('stakeholder'),
-                    acceptance_criteria=req.get('acceptance_criteria')
-                )
-                self.db.add(requirement)
-                await self.db.flush()
-                
-                # Create citation
-                citation = Citation(
-                    requirement_id=requirement.id,
-                    data_source_id=ds.id,
-                    excerpt=req['description'][:500]
-                )
-                self.db.add(citation)
-                
-                all_requirements.append(req)
-        
-        await self.db.commit()
-        
-        logger.info(f"Extracted {len(all_requirements)} requirements for project {project_id}")
-        
-        return {
-            'project_id': project_id,
-            'requirements_count': len(all_requirements),
-            'status': 'success'
-        }
+            logger.info(f"Found {len(data_sources)} data sources for project {project_id}")
+            
+            all_requirements = []
+            
+            for ds in data_sources:
+                try:
+                    logger.info(f"Extracting requirements from data source {ds.id}")
+                    logger.info(f"Content length: {len(ds.raw_content)} chars")
+                    
+                    # Extract requirements
+                    requirements = await self.extractor.extract_requirements(ds.raw_content)
+                    
+                    logger.info(f"Extracted {len(requirements)} requirements from data source {ds.id}")
+                    
+                    for req in requirements:
+                        try:
+                            requirement = Requirement(
+                                project_id=project_id,
+                                requirement_type=RequirementType(req.get('type', 'functional')),
+                                title=req.get('title', 'Requirement'),
+                                description=req.get('description', ''),
+                                priority=req.get('priority', 'Medium'),
+                                stakeholder=req.get('stakeholder'),
+                                acceptance_criteria=req.get('acceptance_criteria')
+                            )
+                            self.db.add(requirement)
+                            await self.db.flush()
+                            
+                            # Create citation
+                            citation = Citation(
+                                requirement_id=requirement.id,
+                                data_source_id=ds.id,
+                                excerpt=req.get('description', '')[:500]
+                            )
+                            self.db.add(citation)
+                            
+                            all_requirements.append(req)
+                            
+                        except Exception as req_error:
+                            logger.error(f"Error saving requirement: {str(req_error)}")
+                            logger.error(f"Requirement data: {req}")
+                            continue
+                            
+                except Exception as ds_error:
+                    logger.error(f"Error processing data source {ds.id}: {str(ds_error)}")
+                    logger.error(traceback.format_exc())
+                    continue
+            
+            await self.db.commit()
+            
+            logger.info(f"Successfully extracted {len(all_requirements)} requirements for project {project_id}")
+            
+            return {
+                'project_id': project_id,
+                'requirements_count': len(all_requirements),
+                'status': 'success'
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in process_and_extract: {str(e)}")
+            logger.error(traceback.format_exc())
+            await self.db.rollback()
+            raise
     
     async def generate_brd(self, project_id: str) -> BRD:
         """Generate complete BRD for a project"""
@@ -328,17 +356,28 @@ class BRDOrchestrator:
         ]
         
         # If no requirements, create basic ones from project description
-        if not req_dicts and project.description:
-            logger.info("No requirements found, using project description")
-            req_dicts = [
-                {
-                    'type': 'functional',
-                    'title': 'Project Implementation',
-                    'description': project.description,
-                    'priority': 'high',
-                    'stakeholder': 'Project Team'
-                }
-            ]
+        if not req_dicts:
+            logger.info("No requirements found, creating from project description")
+            if project.description:
+                req_dicts = [
+                    {
+                        'type': 'functional',
+                        'title': 'Core System Requirements',
+                        'description': project.description,
+                        'priority': 'High',
+                        'stakeholder': 'Project Team'
+                    }
+                ]
+            else:
+                req_dicts = [
+                    {
+                        'type': 'functional',
+                        'title': project.name,
+                        'description': 'Project requirements to be defined',
+                        'priority': 'Medium',
+                        'stakeholder': 'Stakeholders'
+                    }
+                ]
         
         # Generate sections
         sections = {}
