@@ -1,5 +1,7 @@
 # Deploying BRD Generator to Hugging Face Spaces 🚀
 
+**🎉 Live Demo**: https://huggingface.co/spaces/2Amit4/brd-generator
+
 This guide will help you deploy your BRD Generator application to Hugging Face Spaces.
 
 ## Prerequisites

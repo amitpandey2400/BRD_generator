@@ -1,5 +1,7 @@
 # BRD Generator - Quick Start Guide
 
+**🎉 Live Demo**: https://huggingface.co/spaces/2Amit4/brd-generator
+
 ## Installation
 
 1. **Clone the repository**

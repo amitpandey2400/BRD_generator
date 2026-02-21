@@ -1,5 +1,4 @@
 """
-"""
 Intelligent noise filtering to identify project-relevant content
 """
 from typing import Dict, Optional

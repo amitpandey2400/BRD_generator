@@ -1,5 +1,7 @@
 # Deploying BRD Generator to GitHub 🚀
 
+**🎉 Live Demo**: https://huggingface.co/spaces/2Amit4/brd-generator
+
 Complete guide to deploy your BRD Generator to GitHub repository and optionally to Hugging Face Spaces.
 
 ---
