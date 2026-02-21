@@ -1,5 +1,4 @@
 """
-"""
 Document processing for uploaded files (PDF, DOCX, PPTX, TXT)
 """
 import os
