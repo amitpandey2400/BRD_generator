@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BRD Generator - Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 2em;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        .main-content {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            min-height: 500px;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 10px;
+        }
+
+        .tab-button {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1em;
+            color: #666;
+            transition: all 0.3s;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .tab-button.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: bold;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .file-upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f9fafb;
+        }
+
+        .file-upload-area:hover {
+            background: #f3f4f6;
+            border-color: #764ba2;
+        }
+
+        .file-upload-area.dragover {
+            background: #eef2ff;
+            border-color: #4f46e5;
+        }
+
+        .project-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .project-card:hover {
+            transform: translateX(10px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .project-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .project-card p {
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .project-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 0.9em;
+            border-radius: 20px;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border-left: 4px solid #10b981;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border-left: 4px solid #ef4444;
+        }
+
+        .alert-info {
+            background: #dbeafe;
+            color: #1e40af;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        .document-list {
+            list-style: none;
+        }
+
+        .document-item {
+            background: #f9fafb;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .document-item:hover {
+            background: #f3f4f6;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 BRD Generator Dashboard</h1>
+            <div>
+                <button class="btn btn-secondary" onclick="window.location.href='/'">Home</button>
+                <button class="btn btn-secondary" onclick="window.location.href='/docs'">API Docs</button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div id="alertContainer"></div>
+
+            <div class="tab-buttons">
+                <button class="tab-button active" onclick="switchTab('projects')">📂 My Projects</button>
+                <button class="tab-button" onclick="switchTab('create')">➕ Create Project</button>
+                <button class="tab-button" onclick="switchTab('upload')">📄 Upload Document</button>
+                <button class="tab-button" onclick="switchTab('generate')">🤖 Generate BRD</button>
+            </div>
+
+            <!-- Projects Tab -->
+            <div id="projects-tab" class="tab-content active">
+                <h2 style="margin-bottom: 20px; color: #333;">Your Projects</h2>
+                <div id="projectsList">
+                    <div class="loading active">
+                        <div class="spinner"></div>
+                        <p>Loading projects...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Create Project Tab -->
+            <div id="create-tab" class="tab-content">
+                <h2 style="margin-bottom: 20px; color: #333;">Create New Project</h2>
+                <form id="createProjectForm" onsubmit="createProject(event)">
+                    <div class="form-group">
+                        <label for="projectName">Project Name *</label>
+                        <input type="text" id="projectName" required placeholder="e.g., Mobile App Redesign">
+                    </div>
+                    <div class="form-group">
+                        <label for="projectDescription">Description</label>
+                        <textarea id="projectDescription" placeholder="Describe your project and its goals..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Create Project</button>
+                </form>
+            </div>
+
+            <!-- Upload Document Tab -->
+            <div id="upload-tab" class="tab-content">
+                <h2 style="margin-bottom: 20px; color: #333;">Upload Document</h2>
+                
+                <div class="form-group">
+                    <label for="selectProject">Select Project *</label>
+                    <select id="selectProject" required>
+                        <option value="">Loading projects...</option>
+                    </select>
+                </div>
+
+                <div class="file-upload-area" id="fileUploadArea" onclick="document.getElementById('fileInput').click()">
+                    <input type="file" id="fileInput" style="display: none;" accept=".doc,.docx,.pdf,.txt" onchange="handleFileSelect(event)">
+                    <div style="font-size: 3em; margin-bottom: 15px;">📁</div>
+                    <h3 style="margin-bottom: 10px;">Drop files here or click to browse</h3>
+                    <p style="color: #666;">Supported: Word (.doc, .docx), PDF, Text files</p>
+                </div>
+
+                <div id="fileInfo" style="margin-top: 20px; display: none;">
+                    <h3 style="margin-bottom: 15px;">Selected File:</h3>
+                    <div style="background: #f9fafb; padding: 15px; border-radius: 8px;">
+                        <p><strong>Name:</strong> <span id="fileName"></span></p>
+                        <p><strong>Size:</strong> <span id="fileSize"></span></p>
+                        <p><strong>Type:</strong> <span id="fileType"></span></p>
+                    </div>
+                    <button onclick="uploadDocument()" class="btn btn-primary" style="margin-top: 15px;">Upload & Process</button>
+                </div>
+            </div>
+
+            <!-- Generate BRD Tab -->
+            <div id="generate-tab" class="tab-content">
+                <h2 style="margin-bottom: 20px; color: #333;">Generate BRD</h2>
+                
+                <div class="form-group">
+                    <label for="generateProjectSelect">Select Project *</label>
+                    <select id="generateProjectSelect" required onchange="loadProjectData()">
+                        <option value="">Loading projects...</option>
+                    </select>
+                </div>
+
+                <div id="projectDataInfo" style="display: none; margin-top: 20px;">
+                    <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                        <h3 style="margin-bottom: 15px;">Project Information:</h3>
+                        <div id="projectStats"></div>
+                    </div>
+
+                    <button onclick="generateBRD()" class="btn btn-primary" style="width: 100%; padding: 15px;">
+                        🤖 Generate BRD with AI
+                    </button>
+                </div>
+
+                <div id="brdResult" style="margin-top: 30px; display: none;">
+                    <h3 style="margin-bottom: 15px;">Generated BRD:</h3>
+                    <div id="brdContent" style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-radius: 8px; max-height: 500px; overflow-y: auto;"></div>
+                    <button onclick="downloadBRD()" class="btn btn-primary" style="margin-top: 15px;">📥 Download BRD</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedFile = null;
+        let currentBRDId = null;
+        let projects = [];
+
+        // Switch tabs
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            document.querySelector(`button[onclick="switchTab('${tabName}')"]`).classList.add('active');
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+
+            if (tabName === 'projects') {
+                loadProjects();
+            } else if (tabName === 'upload' || tabName === 'generate') {
+                loadProjectsForSelect();
+            }
+        }
+
+        // Show alert message
+        function showAlert(message, type = 'info') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            document.getElementById('alertContainer').appendChild(alertDiv);
+            setTimeout(() => alertDiv.remove(), 5000);
+        }
+
+        // Load projects
+        async function loadProjects() {
+            const container = document.getElementById('projectsList');
+            container.innerHTML = '<div class="loading active"><div class="spinner"></div><p>Loading projects...</p></div>';
+
+            try {
+                const response = await fetch('/api/projects');
+                projects = await response.json();
+
+                if (projects.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📂</div>
+                            <h3>No Projects Yet</h3>
+                            <p>Create your first project to get started!</p>
+                            <button class="btn btn-primary" onclick="switchTab('create')" style="margin-top: 20px;">Create Project</button>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = projects.map(project => `
+                        <div class="project-card">
+                            <h3>${project.name}</h3>
+                            <p>${project.description || 'No description'}</p>
+                            <div class="project-actions">
+                                <button class="btn btn-primary btn-small" onclick="selectProjectAndUpload('${project.id}')">📄 Upload Doc</button>
+                                <button class="btn btn-primary btn-small" onclick="selectProjectAndGenerate('${project.id}')">🤖 Generate BRD</button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                container.innerHTML = `<div class="alert alert-error">Error loading projects: ${error.message}</div>`;
+            }
+        }
+
+        // Load projects for select dropdown
+        async function loadProjectsForSelect() {
+            try {
+                const response = await fetch('/api/projects');
+                projects = await response.json();
+
+                const selects = [document.getElementById('selectProject'), document.getElementById('generateProjectSelect')];
+                selects.forEach(select => {
+                    if (select) {
+                        select.innerHTML = projects.length === 0 
+                            ? '<option value="">No projects available - Create one first</option>'
+                            : '<option value="">Select a project...</option>' + 
+                              projects.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+                    }
+                });
+            } catch (error) {
+                showAlert('Error loading projects', 'error');
+            }
+        }
+
+        // Create project
+        async function createProject(event) {
+            event.preventDefault();
+            const name = document.getElementById('projectName').value;
+            const description = document.getElementById('projectDescription').value;
+
+            try {
+                const response = await fetch('/api/projects', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, description })
+                });
+
+                if (response.ok) {
+                    const project = await response.json();
+                    showAlert('Project created successfully!', 'success');
+                    document.getElementById('createProjectForm').reset();
+                    switchTab('projects');
+                } else {
+                    throw new Error('Failed to create project');
+                }
+            } catch (error) {
+                showAlert('Error creating project: ' + error.message, 'error');
+            }
+        }
+
+        // Handle file selection
+        function handleFileSelect(event) {
+            selectedFile = event.target.files[0];
+            if (selectedFile) {
+                document.getElementById('fileInfo').style.display = 'block';
+                document.getElementById('fileName').textContent = selectedFile.name;
+                document.getElementById('fileSize').textContent = (selectedFile.size / 1024).toFixed(2) + ' KB';
+                document.getElementById('fileType').textContent = selectedFile.type || 'Unknown';
+            }
+        }
+
+        // Upload document
+        async function uploadDocument() {
+            const projectId = document.getElementById('selectProject').value;
+            if (!projectId || !selectedFile) {
+                showAlert('Please select a project and file', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            formData.append('project_id', projectId);
+
+            try {
+                showAlert('Uploading and processing document...', 'info');
+                const response = await fetch('/api/data-sources/document', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    showAlert('Document uploaded and processed successfully!', 'success');
+                    selectedFile = null;
+                    document.getElementById('fileInfo').style.display = 'none';
+                    document.getElementById('fileInput').value = '';
+                } else {
+                    throw new Error('Upload failed');
+                }
+            } catch (error) {
+                showAlert('Error uploading document: ' + error.message, 'error');
+            }
+        }
+
+        // Generate BRD
+        async function generateBRD() {
+            const projectId = document.getElementById('generateProjectSelect').value;
+            if (!projectId) {
+                showAlert('Please select a project', 'error');
+                return;
+            }
+
+            try {
+                showAlert('Generating BRD with AI... This may take a minute.', 'info');
+                document.getElementById('brdResult').style.display = 'none';
+
+                const response = await fetch('/api/brds/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ project_id: projectId })
+                });
+
+                if (response.ok) {
+                    const brd = await response.json();
+                    currentBRDId = brd.id;
+                    document.getElementById('brdContent').innerHTML = `
+                        <h2>${brd.title || 'Business Requirements Document'}</h2>
+                        <pre style="white-space: pre-wrap; font-family: inherit;">${brd.full_document || brd.executive_summary || 'BRD content generated'}</pre>
+                    `;
+                    document.getElementById('brdResult').style.display = 'block';
+                    showAlert('BRD generated successfully!', 'success');
+                } else {
+                    throw new Error('BRD generation failed');
+                }
+            } catch (error) {
+                showAlert('Error generating BRD: ' + error.message, 'error');
+            }
+        }
+
+        // Download BRD
+        function downloadBRD() {
+            const content = document.getElementById('brdContent').textContent;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Business_Requirements_Document.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+            showAlert('BRD downloaded!', 'success');
+        }
+
+        // Helper functions
+        function selectProjectAndUpload(projectId) {
+            switchTab('upload');
+            setTimeout(() => {
+                document.getElementById('selectProject').value = projectId;
+            }, 100);
+        }
+
+        function selectProjectAndGenerate(projectId) {
+            switchTab('generate');
+            setTimeout(() => {
+                document.getElementById('generateProjectSelect').value = projectId;
+                loadProjectData();
+            }, 100);
+        }
+
+        async function loadProjectData() {
+            const projectId = document.getElementById('generateProjectSelect').value;
+            if (!projectId) {
+                document.getElementById('projectDataInfo').style.display = 'none';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/projects/${projectId}`);
+                const project = await response.json();
+                
+                document.getElementById('projectStats').innerHTML = `
+                    <p><strong>Name:</strong> ${project.name}</p>
+                    <p><strong>Description:</strong> ${project.description || 'No description'}</p>
+                    <p><span class="badge badge-info">Ready to generate</span></p>
+                `;
+                document.getElementById('projectDataInfo').style.display = 'block';
+            } catch (error) {
+                showAlert('Error loading project data', 'error');
+            }
+        }
+
+        // File drag and drop
+        const uploadArea = document.getElementById('fileUploadArea');
+        if (uploadArea) {
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, () => uploadArea.classList.add('dragover'), false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, () => uploadArea.classList.remove('dragover'), false);
+            });
+
+            uploadArea.addEventListener('drop', handleDrop, false);
+
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                if (files.length > 0) {
+                    selectedFile = files[0];
+                    handleFileSelect({ target: { files: [selectedFile] } });
+                }
+            }
+        }
+
+        // Load projects on page load
+        loadProjects();
+        loadProjectsForSelect();
+    </script>
+</body>
+</html>
