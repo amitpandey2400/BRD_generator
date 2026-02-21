@@ -2,11 +2,11 @@
 Conflict detection between requirements
 """
 from typing import List, Dict, Tuple
-from openai import AsyncOpenAI
 import json
 
 from config.settings import settings
 from utils.logger import get_logger
+from utils.ai_client import AIClient
 
 logger = get_logger(__name__)
 
@@ -15,7 +15,7 @@ class ConflictDetector:
     """Detect conflicts and contradictions between requirements"""
     
     def __init__(self):
-        self.client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
+        self.client = AIClient()
     
     async def detect_conflicts(
         self,
@@ -83,8 +83,7 @@ Return ONLY a JSON array of conflicts. If no conflicts found, return an empty ar
 """
         
         try:
-            response = await self.client.chat.completions.create(
-                model=settings.OPENAI_MODEL,
+            content = await self.client.generate_completion(
                 messages=[
                     {"role": "system", "content": "You are an expert at identifying conflicts between business requirements. Always return valid JSON."},
                     {"role": "user", "content": prompt}
@@ -92,7 +91,6 @@ Return ONLY a JSON array of conflicts. If no conflicts found, return an empty ar
                 temperature=0.3
             )
             
-            content = response.choices[0].message.content
             conflicts = json.loads(content)
             
             # Map back to actual requirement IDs
@@ -153,8 +151,7 @@ Return ONLY a JSON object with the analysis.
 """
         
         try:
-            response = await self.client.chat.completions.create(
-                model=settings.OPENAI_MODEL,
+            content = await self.client.generate_completion(
                 messages=[
                     {"role": "system", "content": "You are an expert at analyzing requirement compatibility. Always return valid JSON."},
                     {"role": "user", "content": prompt}
@@ -162,7 +159,6 @@ Return ONLY a JSON object with the analysis.
                 temperature=0.3
             )
             
-            content = response.choices[0].message.content
             result = json.loads(content)
             
             return result
@@ -213,8 +209,7 @@ Return ONLY a JSON array of resolution options.
 """
         
         try:
-            response = await self.client.chat.completions.create(
-                model=settings.OPENAI_MODEL,
+            content = await self.client.generate_completion(
                 messages=[
                     {"role": "system", "content": "You are an expert at resolving requirement conflicts. Always return valid JSON."},
                     {"role": "user", "content": prompt}
@@ -222,7 +217,6 @@ Return ONLY a JSON array of resolution options.
                 temperature=0.5
             )
             
-            content = response.choices[0].message.content
             resolutions = json.loads(content)
             
             return {

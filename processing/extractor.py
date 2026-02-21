@@ -98,8 +98,7 @@ Return ONLY a JSON array of decisions.
 """
         
         try:
-            response = await self.client.chat.completions.create(
-                model=settings.OPENAI_MODEL,
+            content = await self.ai.generate_completion(
                 messages=[
                     {"role": "system", "content": "You are an expert at identifying key decisions in business communications. Always return valid JSON."},
                     {"role": "user", "content": prompt}
@@ -107,7 +106,6 @@ Return ONLY a JSON array of decisions.
                 temperature=0.3
             )
             
-            content = response.choices[0].message.content
             decisions = json.loads(content)
             
             logger.info(f"Extracted {len(decisions)} decisions")
@@ -136,8 +134,7 @@ Return ONLY a JSON array of stakeholders.
 """
         
         try:
-            response = await self.client.chat.completions.create(
-                model=settings.OPENAI_MODEL,
+            content = await self.ai.generate_completion(
                 messages=[
                     {"role": "system", "content": "You are an expert at identifying stakeholders. Always return valid JSON."},
                     {"role": "user", "content": prompt}
@@ -145,7 +142,6 @@ Return ONLY a JSON array of stakeholders.
                 temperature=0.3
             )
             
-            content = response.choices[0].message.content
             stakeholders = json.loads(content)
             
             logger.info(f"Extracted {len(stakeholders)} stakeholders")
@@ -174,8 +170,7 @@ Return ONLY a JSON array of timeline items.
 """
         
         try:
-            response = await self.client.chat.completions.create(
-                model=settings.OPENAI_MODEL,
+            content = await self.ai.generate_completion(
                 messages=[
                     {"role": "system", "content": "You are an expert at extracting timeline information. Always return valid JSON."},
                     {"role": "user", "content": prompt}
@@ -183,7 +178,6 @@ Return ONLY a JSON array of timeline items.
                 temperature=0.3
             )
             
-            content = response.choices[0].message.content
             timeline = json.loads(content)
             
             logger.info(f"Extracted {len(timeline)} timeline items")
@@ -205,8 +199,7 @@ Text:
 """
         
         try:
-            response = await self.client.chat.completions.create(
-                model=settings.OPENAI_MODEL,
+            content = await self.ai.generate_completion(
                 messages=[
                     {"role": "system", "content": "You are an expert at identifying assumptions and constraints. Always return valid JSON."},
                     {"role": "user", "content": prompt}
@@ -214,7 +207,6 @@ Text:
                 temperature=0.3
             )
             
-            content = response.choices[0].message.content
             assumptions = json.loads(content)
             
             logger.info(f"Extracted {len(assumptions)} assumptions")
@@ -242,8 +234,7 @@ Return ONLY a JSON array of metrics.
 """
         
         try:
-            response = await self.client.chat.completions.create(
-                model=settings.OPENAI_MODEL,
+            content = await self.ai.generate_completion(
                 messages=[
                     {"role": "system", "content": "You are an expert at identifying success metrics. Always return valid JSON."},
                     {"role": "user", "content": prompt}
@@ -251,7 +242,6 @@ Return ONLY a JSON array of metrics.
                 temperature=0.3
             )
             
-            content = response.choices[0].message.content
             metrics = json.loads(content)
             
             logger.info(f"Extracted {len(metrics)} success metrics")

@@ -1,12 +1,13 @@
 """
+"""
 Intelligent noise filtering to identify project-relevant content
 """
 from typing import Dict, Optional
-from openai import AsyncOpenAI
 import json
 
 from config.settings import settings
 from utils.logger import get_logger
+from utils.ai_client import AIClient
 
 logger = get_logger(__name__)
 
@@ -15,7 +16,7 @@ class NoiseFilter:
     """Filter out irrelevant content and focus on project-related information"""
     
     def __init__(self):
-        self.client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
+        self.client = AIClient()
     
     async def is_relevant(
         self,
@@ -75,8 +76,7 @@ Return ONLY a JSON object with this format:
 """
         
         try:
-            response = await self.client.chat.completions.create(
-                model=settings.OPENAI_MODEL,
+            content = await self.client.generate_completion(
                 messages=[
                     {"role": "system", "content": "You are an expert at filtering business communications for project-relevant information. Always return valid JSON."},
                     {"role": "user", "content": prompt}
@@ -85,7 +85,6 @@ Return ONLY a JSON object with this format:
                 max_tokens=500
             )
             
-            content = response.choices[0].message.content
             result = json.loads(content)
             
             logger.info(
@@ -137,8 +136,7 @@ Return ONLY a JSON object with category names as keys and confidence scores as v
 """
         
         try:
-            response = await self.client.chat.completions.create(
-                model=settings.OPENAI_MODEL,
+            content = await self.client.generate_completion(
                 messages=[
                     {"role": "system", "content": "You are an expert at categorizing business communications. Always return valid JSON."},
                     {"role": "user", "content": prompt}
@@ -146,7 +144,6 @@ Return ONLY a JSON object with category names as keys and confidence scores as v
                 temperature=0.3
             )
             
-            content = response.choices[0].message.content
             categories = json.loads(content)
             
             return categories
@@ -177,8 +174,7 @@ Return ONLY a JSON array of strings, each containing one key point.
 """
         
         try:
-            response = await self.client.chat.completions.create(
-                model=settings.OPENAI_MODEL,
+            content = await self.client.generate_completion(
                 messages=[
                     {"role": "system", "content": "You are an expert at extracting key points from text. Always return valid JSON."},
                     {"role": "user", "content": prompt}
@@ -186,7 +182,6 @@ Return ONLY a JSON array of strings, each containing one key point.
                 temperature=0.3
             )
             
-            content = response.choices[0].message.content
             key_points = json.loads(content)
             
             return key_points

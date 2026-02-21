@@ -2,11 +2,11 @@
 Sentiment analysis for stakeholder communications
 """
 from typing import Dict, List
-from openai import AsyncOpenAI
 import json
 
 from config.settings import settings
 from utils.logger import get_logger
+from utils.ai_client import AIClient
 
 logger = get_logger(__name__)
 
@@ -15,7 +15,7 @@ class SentimentAnalyzer:
     """Analyze sentiment and extract concerns from stakeholder communications"""
     
     def __init__(self):
-        self.client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
+        self.client = AIClient()
     
     async def analyze_sentiment(self, text: str, stakeholder: str = "Unknown") -> Dict:
         """
@@ -47,8 +47,7 @@ Return ONLY a JSON object with the analysis.
 """
         
         try:
-            response = await self.client.chat.completions.create(
-                model=settings.OPENAI_MODEL,
+            content = await self.client.generate_completion(
                 messages=[
                     {"role": "system", "content": "You are an expert at analyzing sentiment and emotional tone in business communications. Always return valid JSON."},
                     {"role": "user", "content": prompt}
@@ -56,7 +55,6 @@ Return ONLY a JSON object with the analysis.
                 temperature=0.3
             )
             
-            content = response.choices[0].message.content
             result = json.loads(content)
             result['stakeholder'] = stakeholder
             
@@ -104,8 +102,7 @@ Return ONLY a JSON array of concerns.
 """
         
         try:
-            response = await self.client.chat.completions.create(
-                model=settings.OPENAI_MODEL,
+            content = await self.client.generate_completion(
                 messages=[
                     {"role": "system", "content": "You are an expert at identifying concerns and risks. Always return valid JSON."},
                     {"role": "user", "content": prompt}
@@ -113,7 +110,6 @@ Return ONLY a JSON array of concerns.
                 temperature=0.3
             )
             
-            content = response.choices[0].message.content
             concerns = json.loads(content)
             
             logger.info(f"Extracted {len(concerns)} concerns")
@@ -158,8 +154,7 @@ Return ONLY a JSON object with the summary.
 """
         
         try:
-            response = await self.client.chat.completions.create(
-                model=settings.OPENAI_MODEL,
+            content = await self.client.generate_completion(
                 messages=[
                     {"role": "system", "content": "You are an expert at summarizing stakeholder communications. Always return valid JSON."},
                     {"role": "user", "content": prompt}
@@ -167,7 +162,6 @@ Return ONLY a JSON object with the summary.
                 temperature=0.3
             )
             
-            content = response.choices[0].message.content
             result = json.loads(content)
             result['stakeholder'] = stakeholder
             result['num_communications'] = len(texts)
