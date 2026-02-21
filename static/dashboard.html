@@ -553,19 +553,23 @@
             formData.append('project_id', projectId);
 
             try {
-                showAlert('Uploading and processing document...', 'info');
+                showAlert('Uploading and extracting requirements...', 'info');
                 const response = await fetch('/api/data-sources/upload', {
                     method: 'POST',
                     body: formData
                 });
 
                 if (response.ok) {
-                    showAlert('Document uploaded and processed successfully!', 'success');
+                    const result = await response.json();
+                    showAlert('Document processed successfully! Requirements extracted.', 'success');
                     selectedFile = null;
                     document.getElementById('fileInfo').style.display = 'none';
                     document.getElementById('fileInput').value = '';
+                    // Refresh projects to show updated status
+                    loadProjects();
                 } else {
-                    throw new Error('Upload failed');
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Upload failed');
                 }
             } catch (error) {
                 showAlert('Error uploading document: ' + error.message, 'error');

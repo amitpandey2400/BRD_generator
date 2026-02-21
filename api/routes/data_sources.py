@@ -1,7 +1,7 @@
 """
 API routes for data sources
 """
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
 from typing import List
@@ -82,11 +82,24 @@ async def get_data_source(
 @router.post("/upload")
 async def upload_document(
     file: UploadFile = File(...),
+    project_id: str = Form(...),
     db: AsyncSession = Depends(get_db)
 ):
     """Upload a document for processing"""
     import traceback
+    from brd_generator.orchestrator import BRDOrchestrator
+    from storage.models import Project, DataSourceType, DataSource
+    
     try:
+        # Validate project_id
+        if not project_id:
+            raise HTTPException(status_code=400, detail="project_id is required")
+            
+        # Check project exists
+        project = await db.get(Project, project_id)
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found")
+        
         # Check file size
         contents = await file.read()
         if len(contents) > settings.MAX_UPLOAD_SIZE:
@@ -96,11 +109,33 @@ async def upload_document(
         doc_processor = DocumentProcessor()
         file_path = doc_processor.save_uploaded_file(contents, file.filename)
         
+        # Process document to extract text
+        doc_data = doc_processor.process_file(file_path)
+        
+        # Save as DataSource in database
+        data_source = DataSource(
+            project_id=project_id,
+            source_type=DataSourceType.DOCUMENT,
+            source_identifier=file_path,
+            raw_content=doc_data['content'],
+            metadata_json=doc_data['metadata'],
+            relevance_score=100,  # Uploaded docs are intentionally relevant
+            is_relevant=True
+        )
+        db.add(data_source)
+        await db.commit()
+        await db.refresh(data_source)
+        
+        # Extract requirements from document
+        orchestrator = BRDOrchestrator(db)
+        await orchestrator.process_and_extract(project_id)
+        
         return {
             "filename": file.filename,
             "file_path": file_path,
             "size": len(contents),
-            "message": "File uploaded successfully"
+            "data_source_id": data_source.id,
+            "message": "File uploaded and processed successfully"
         }
     except HTTPException:
         raise
